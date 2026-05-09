@@ -23,14 +23,36 @@ public_users.get('/isbn/:isbn',function (req, res) {
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  // Get all keys from books object
+  const bookKeys = Object.keys(books);
+
+  // Get author from request parameter
+  const authorName = req.params.author;
+
+  // Iterate through books
+  bookKeys.forEach((key) => {
+      // Check if author matches
+      if (books[key].author === authorName) {
+          return res.send(books[key]);
+      }
+  });
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+   // Get all keys from books object
+   const bookKeys = Object.keys(books);
+
+   // Get author from request parameter
+   const title = req.params.title;
+ 
+   // Iterate through books
+   bookKeys.forEach((key) => {
+       // Check if title matches
+       if (books[key].title === title) {
+           return res.send(books[key]);
+       }
+   });
 });
 
 //  Get book review
