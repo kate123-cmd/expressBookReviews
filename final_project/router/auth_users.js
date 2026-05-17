@@ -58,8 +58,64 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+
+    // Get username from session
+    const username = req.session.authorization.username;
+
+    // Get review from query
+    const review = req.query.review;
+
+    // Get ISBN from URL parameter
+    const isbn = req.params.isbn;
+
+    // Check if book exists
+    if (!books[isbn]) {
+        return res.status(404).json({
+            message: "Book not found"
+        });
+    }
+
+    // Add or modify review
+    books[isbn].reviews[username] = review;
+
+    return res.status(200).json({
+        message: "Review added/updated successfully",
+        reviews: books[isbn].reviews
+    });
+});
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+
+    // Get username from session
+    const username = req.session.authorization.username;
+
+    // Get ISBN
+    const isbn = req.params.isbn;
+
+    // Check if book exists
+    if (!books[isbn]) {
+        return res.status(404).json({
+            message: "Book not found"
+        });
+    }
+
+    // Check if user review exists
+    if (books[isbn].reviews[username]) {
+
+        // Delete only this user's review
+        delete books[isbn].reviews[username];
+
+        return res.status(200).json({
+            message: "Review deleted successfully",
+            reviews: books[isbn].reviews
+        });
+
+    } else {
+
+        return res.status(404).json({
+            message: "Review not found for this user"
+        });
+    }
 });
 
 module.exports.authenticated = regd_users;
