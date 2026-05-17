@@ -115,20 +115,39 @@ public_users.get('/author/:author', function (req, res) {
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-   // Get all keys from books object
-   const bookKeys = Object.keys(books);
+const axios = require('axios');
 
-   // Get author from request parameter
-   const title = req.params.title;
- 
-   // Iterate through books
-   bookKeys.forEach((key) => {
-       // Check if title matches
-       if (books[key].title === title) {
-           return res.send(books[key]);
-       }
-   });
+public_users.get('/title/:title', async function (req, res) {
+
+    const title = req.params.title;
+
+    try {
+
+        // Fetch all books using axios
+        const response = await axios.get('http://localhost:5000/');
+
+        const booksData = response.data;
+
+        // Filter books by title
+        const filteredBooks = Object.keys(booksData)
+            .filter((key) => booksData[key].title === title)
+            .map((key) => booksData[key]);
+
+        // Check if books found
+        if (filteredBooks.length > 0) {
+            return res.send(filteredBooks);
+        }
+
+        return res.status(404).json({
+            message: "No books found with this title"
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: "Error fetching books"
+        });
+    }
 });
 
 //  Get book review
