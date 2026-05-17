@@ -40,31 +40,78 @@ public_users.post("/register", (req, res) => {
 
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books,null,3));
+public_users.get('/', function (req, res) {
+
+    new Promise((resolve, reject) => {
+        resolve(books);
+    })
+    .then((data) => {
+        res.send(JSON.stringify(data, null, 3));
+    })
+    .catch(() => {
+        res.status(500).json({
+            message: "Error getting books"
+        });
+    });
+
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+public_users.get('/isbn/:isbn', async function (req, res) {
+
     const isbn = req.params.isbn;
-    res.send(books[isbn]);
- });
+
+    try {
+
+        const book = await Promise.resolve(books[isbn]);
+
+        if (book) {
+            return res.send(book);
+        }
+
+        return res.status(404).json({
+            message: "Book not found"
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: "Error fetching book"
+        });
+    }
+});
+
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  // Get all keys from books object
-  const bookKeys = Object.keys(books);
+public_users.get('/author/:author', function (req, res) {
 
-  // Get author from request parameter
-  const authorName = req.params.author;
+    // Get author from request parameter
+    const authorName = req.params.author;
 
-  // Iterate through books
-  bookKeys.forEach((key) => {
-      // Check if author matches
-      if (books[key].author === authorName) {
-          return res.send(books[key]);
-      }
-  });
+    new Promise((resolve, reject) => {
+
+        // Get all books matching the author
+        const filteredBooks = Object.keys(books)
+            .filter((key) => books[key].author === authorName)
+            .map((key) => books[key]);
+
+        // Check if any books found
+        if (filteredBooks.length > 0) {
+            resolve(filteredBooks);
+        } else {
+            reject("No books found for this author");
+        }
+
+    })
+    .then((data) => {
+        res.send(data);
+    })
+    .catch((err) => {
+        res.status(404).json({
+            message: err
+        });
+    });
+
 });
 
 // Get all books based on title
